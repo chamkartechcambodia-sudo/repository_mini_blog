@@ -3,22 +3,12 @@ package com.example.miniblog
 import androidx.lifecycle.LiveData
 
 /**
- * Step 2 — the Repository.
+ * Step 4 — PostRepository is now an INTERFACE: the abstraction the ViewModel depends on.
  *
- * It now OWNS the data sources (network [ApiService] + database [PostDao]) and exposes a
- * clean, intention-revealing API to the rest of the app: read [posts], or ask to [refresh].
- * The ViewModel no longer needs to know HOW data is fetched or stored.
+ * Production code uses [DefaultPostRepository]; tests can swap in a fake implementation. This
+ * is exactly what makes the ViewModel unit-testable without Android, the network, or Room.
  */
-class PostRepository(
-    private val api: ApiService,
-    private val dao: PostDao
-) {
-    /** Single source of truth = Room. */
-    val posts: LiveData<List<Post>> = dao.getAllPosts()
-
-    /** Fetch from the network, then save into Room. */
-    suspend fun refresh() {
-        val fetched = api.getPosts()
-        dao.insertPosts(fetched)
-    }
+interface PostRepository {
+    val posts: LiveData<List<Post>>
+    suspend fun refresh()
 }

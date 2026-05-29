@@ -3,17 +3,16 @@ package com.example.miniblog
 import android.app.Application
 
 /**
- * Step 3 — manual dependency injection (NO Hilt).
- *
- * The Application is the app's "composition root": the ONE place that builds the database and
- * the repository, then holds them for the whole app to share. `by lazy` means each is created
- * the first time it's needed and then reused.
- *
- * Registered in AndroidManifest.xml via android:name=".MiniBlogApplication".
+ * Step 4 — the composition root now builds the CONCRETE [DefaultPostRepository] but exposes it
+ * through the [PostRepository] interface type. The production wiring is otherwise unchanged; the
+ * point is that everything depending on `repository` now depends on the abstraction — which is
+ * what lets tests substitute a fake. Manual DI, no Hilt.
  */
 class MiniBlogApplication : Application() {
 
     val database by lazy { AppDatabase.getInstance(this) }
 
-    val repository by lazy { PostRepository(RetrofitClient.api, database.postDao()) }
+    val repository: PostRepository by lazy {
+        DefaultPostRepository(RetrofitClient.api, database.postDao())
+    }
 }

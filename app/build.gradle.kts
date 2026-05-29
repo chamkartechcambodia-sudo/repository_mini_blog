@@ -70,4 +70,8 @@ dependencies {
     // --- Glide: kept in the stack for a later image-loading lesson (basic use only — no
     //     Glide compiler, no @GlideModule). Not used by the current UI yet. ---
     implementation(libs.glide)
+
+    // --- Unit testing (added in step 4): JUnit + InstantTaskExecutorRule for LiveData ---
+    testImplementation(libs.junit)
+    testImplementation(libs.androidx.arch.core.testing)
 }

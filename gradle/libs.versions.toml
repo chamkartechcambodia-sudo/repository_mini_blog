@@ -1,6 +1,4 @@
 # Gradle Version Catalog — single place for all dependency versions.
-# (Test-only libraries are intentionally NOT here yet; they arrive with the
-#  testing lesson on branch 04-testable.)
 
 [versions]
 agp = "9.0.1"
@@ -17,6 +15,8 @@ appcompat = "1.7.1"
 material = "1.12.0"
 constraintlayout = "2.2.1"
 activityKtx = "1.13.0"
+junit = "4.13.2"
+archCoreTesting = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +40,10 @@ moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
 moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
 
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+
+# Test-only (added with the testing lesson on branch 04-testable).
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
