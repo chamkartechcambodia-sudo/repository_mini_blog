@@ -1,0 +1,5 @@
+<resources>
+    <!-- Material 3 day/night theme. Material provides sensible default colors, so the
+         starter keeps this minimal — no custom color palette needed for the lessons. -->
+    <style name="Theme.MiniBlog" parent="Theme.Material3.DayNight" />
+</resources>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MiniBlog — Step-by-step Guide to the TODOs (Repository Pattern)</title>
+<style>
+  :root{
+    --ink:#1e293b;--muted:#64748b;--accent:#4f46e5;--accent2:#0ea5e9;--line:#e2e8f0;
+    --code-bg:#0f172a;--code-ink:#e2e8f0;--ok:#16a34a;--warn:#d97706;--warnbg:#fef3c7;--infobg:#eff6ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;color:var(--ink);background:#f1f5f9;line-height:1.65}
+  header.top{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;padding:30px 20px}
+  header.top h1{margin:0 0 6px;font-size:1.55rem}
+  header.top p{margin:0;opacity:.95;max-width:62ch}
+  .wrap{display:grid;grid-template-columns:270px 1fr;gap:24px;max-width:1120px;margin:0 auto;padding:24px 20px}
+  nav.toc{position:sticky;top:16px;align-self:start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;font-size:.92rem;max-height:calc(100vh - 32px);overflow:auto}
+  nav.toc h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:.2rem 0 .6rem}
+  nav.toc a{display:block;color:var(--ink);text-decoration:none;padding:4px 8px;border-radius:6px}
+  nav.toc a:hover{background:#eef2ff;color:var(--accent)}
+  nav.toc a.sub{padding-left:22px;color:var(--muted);font-size:.86rem}
+  main{min-width:0}
+  section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:22px;scroll-margin-top:14px}
+  h2.step{margin-top:0;font-size:1.28rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .badge{background:var(--accent);color:#fff;border-radius:999px;font-size:.76rem;padding:3px 11px;font-weight:700;letter-spacing:.02em}
+  .branch{background:#0f172a;color:#e2e8f0;border-radius:6px;font-size:.78rem;padding:2px 8px;font-family:ui-monospace,Consolas,monospace}
+  h3{margin:24px 0 6px;font-size:1.06rem}
+  .file{font-family:ui-monospace,Consolas,monospace;background:#eef2ff;color:var(--accent);border:1px solid #c7d2fe;border-radius:6px;padding:2px 8px;font-size:.9rem}
+  .tag-new{background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:6px;font-size:.72rem;padding:1px 7px;margin-left:6px;font-weight:600}
+  .tag-edit{background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:6px;font-size:.72rem;padding:1px 7px;margin-left:6px;font-weight:600}
+  pre{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:16px;overflow:auto;font-size:.85rem;line-height:1.5;margin:10px 0}
+  pre code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}
+  .copy{position:absolute;top:8px;right:8px;background:#334155;color:#e2e8f0;border:0;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer;opacity:.8}
+  .copy:hover{opacity:1}
+  .why{background:var(--infobg);border-left:4px solid var(--accent2);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0}
+  .why b,.why strong{color:var(--accent)}
+  .warn{background:var(--warnbg);border-left:4px solid var(--warn);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+  .ok{background:#dcfce7;border-left:4px solid var(--ok);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+  code.i{background:#f1f5f9;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:ui-monospace,Consolas,monospace;font-size:.88em}
+  .small{color:var(--muted);font-size:.9rem}
+  ul.chk{list-style:none;padding-left:0;margin:14px 0 0}
+  ul.chk li{margin:7px 0;padding:8px 12px;background:#f8fafc;border:1px solid var(--line);border-radius:8px}
+  ul.chk input{margin-right:9px;transform:scale(1.2);vertical-align:-2px}
+  .toplink{font-size:.8rem;color:var(--accent2);text-decoration:none;float:right;font-weight:600}
+  table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;margin:10px 0}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  table.tbl th{background:#f8fafc}
+  hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+  @media(max-width:820px){.wrap{grid-template-columns:1fr}nav.toc{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>MiniBlog — Step-by-step Guide to the TODOs</h1>
+  <p>A worked solution (step by step) for the <b>Repository pattern</b> teaching project. Start on
+  branch <span class="branch">00-starter</span> (skeleton + TODOs) and go through 4 steps to reach a
+  complete, testable app.</p>
+</header>
+
+<div class="wrap">
+<nav class="toc">
+  <h2>Contents</h2>
+  <a href="#intro">Introduction</a>
+  <a href="#branches">How the branches work</a>
+  <a href="#step1">Step 1 — Make the app run</a>
+  <a class="sub" href="#s1-api">1.1 ApiService.kt</a>
+  <a class="sub" href="#s1-retrofit">1.2 RetrofitClient.kt</a>
+  <a class="sub" href="#s1-adapter">1.3 PostAdapter.kt</a>
+  <a class="sub" href="#s1-vm">1.4 PostViewModel.kt</a>
+  <a class="sub" href="#s1-main">1.5 MainActivity.kt</a>
+  <a href="#step2">Step 2 — Extract the Repository</a>
+  <a href="#step3">Step 3 — Factory + Application</a>
+  <a href="#step4">Step 4 — Interface + Test</a>
+  <a href="#verify">Verify &amp; troubleshooting</a>
+</nav>
+
+<main>
+
+<section id="intro">
+  <h2 class="step">Introduction</h2>
+  <p>The whole course revolves around <b>one</b> app — <b>MiniBlog</b> (a single screen: a list of posts +
+  a <i>Refresh</i> button). Data comes from <a href="https://jsonplaceholder.typicode.com/posts" target="_blank" rel="noopener">JSONPlaceholder</a>,
+  is stored in <b>Room</b>, and the UI observes Room through <b>LiveData</b> (the single source of truth is Room).</p>
+  <p>On branch <span class="branch">00-starter</span>, three networking/RecyclerView files are left empty as
+  <code class="i">// TODO</code>. Your job is to fill them (Step 1) and then refactor toward the Repository pattern.</p>
+  <div class="why"><b>Tip:</b> each step corresponds to a git branch, and the <b>diff between two adjacent branches IS the lesson</b>.
+  If you get stuck, check out the completed answer with <code class="i">git checkout 01-no-repository</code> (…02, 03, 04), or compare with
+  <code class="i">git diff 00-starter..01-no-repository</code>.</div>
+  <div class="warn"><b>Convention in this guide:</b> for each file, <b>replace the ENTIRE file content</b> with the code shown
+  (unless it says "add these lines"). Keep the <code class="i">package com.example.miniblog</code> line at the top.</div>
+</section>
+
+<section id="branches">
+  <h2 class="step">How the branches work</h2>
+  <p>Open the repository folder in Android Studio (Otter 3 Feature Drop+). Before starting Step 1, make sure you are on the
+  starting branch:</p>
+  <pre><code>git checkout 00-starter</code></pre>
+  <table class="tbl">
+    <tr><th>Branch</th><th>What you do</th></tr>
+    <tr><td><span class="branch">00-starter</span></td><td>Starting point: skeleton + the TODOs.</td></tr>
+    <tr><td><span class="branch">01-no-repository</span></td><td>Step 1: fill the TODOs → the app runs (the ViewModel holds both api + dao).</td></tr>
+    <tr><td><span class="branch">02-repository</span></td><td>Step 2: extract <code class="i">PostRepository</code>.</td></tr>
+    <tr><td><span class="branch">03-factory-di</span></td><td>Step 3: add a Factory + an Application that owns the database.</td></tr>
+    <tr><td><span class="branch">04-testable</span></td><td>Step 4: make the Repository an interface + a Fake + one JUnit test.</td></tr>
+  </table>
+  <p class="small">You can type the code on the 00-starter branch, or create your own practice branch: <code class="i">git checkout -b practice</code>.</p>
+</section>
+
+<!-- ===================== STEP 1 ===================== -->
+<section id="step1">
+  <a class="toplink" href="#intro">↑ top</a>
+  <h2 class="step"><span class="badge">Step 1</span> Make the app run <span class="branch">→ 01-no-repository</span></h2>
+  <p>Goal: fill the three stub files (networking + adapter), create <span class="file">PostViewModel.kt</span>, and wire up
+  <span class="file">MainActivity.kt</span>. After this step, tapping <b>Refresh</b> downloads posts and shows them.</p>
+
+  <h3 id="s1-api"><span class="file">ApiService.kt</span> <span class="tag-edit">EDIT</span> — declare the endpoint</h3>
+  <p>Define the network call: fetch the list of posts.</p>
+  <pre><code>package com.example.miniblog
+
+import retrofit2.http.GET
+
+interface ApiService {
+
+    @GET("posts")
+    suspend fun getPosts(): List&lt;Post&gt;
+}</code></pre>
+  <div class="why"><b>Why:</b> <code class="i">@GET("posts")</code> is joined with <code class="i">BASE_URL</code> to form
+  <code class="i">.../posts</code>. The <code class="i">suspend</code> keyword lets us call it from a coroutine (in the ViewModel) without blocking the UI.</div>
+
+  <h3 id="s1-retrofit"><span class="file">RetrofitClient.kt</span> <span class="tag-edit">EDIT</span> — build Retrofit + Moshi</h3>
+  <pre><code>package com.example.miniblog
+
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+
+object RetrofitClient {
+
+    const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+
+    private val moshi: Moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+
+    val api: ApiService = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
+        .create(ApiService::class.java)
+}</code></pre>
+  <div class="why"><b>Why:</b> Moshi uses its <b>reflection</b> adapter (<code class="i">KotlinJsonAdapterFactory</code>), so NO annotation
+  processor is needed to turn JSON into a <code class="i">Post</code>. <code class="i">Retrofit.create(...)</code> generates the implementation of the <code class="i">ApiService</code> interface.</div>
+
+  <h3 id="s1-adapter"><span class="file">PostAdapter.kt</span> <span class="tag-edit">EDIT</span> — show the list</h3>
+  <pre><code>package com.example.miniblog
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+
+class PostAdapter : RecyclerView.Adapter&lt;PostAdapter.PostViewHolder&gt;() {
+
+    private var posts: List&lt;Post&gt; = emptyList()
+
+    /** Replace the whole list and redraw. (DiffUtil is a later optimization.) */
+    fun updatePosts(newPosts: List&lt;Post&gt;) {
+        posts = newPosts
+        notifyDataSetChanged()
+    }
+
+    class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val titleText: TextView = itemView.findViewById(R.id.titleText)
+        val bodyText: TextView = itemView.findViewById(R.id.bodyText)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_post, parent, false)
+        return PostViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
+        val post = posts[position]
+        holder.titleText.text = post.title
+        holder.bodyText.text = post.body
+    }
+
+    override fun getItemCount(): Int = posts.size
+}</code></pre>
+  <div class="why"><b>RecyclerView refresher:</b> <code class="i">onCreateViewHolder</code> inflates one row from
+  <span class="file">item_post.xml</span>; <code class="i">onBindViewHolder</code> puts a <code class="i">Post</code>'s data into that row;
+  <code class="i">getItemCount</code> returns the number of rows. <code class="i">updatePosts</code> lets the Activity push new data in.</div>
+
+  <h3 id="s1-vm"><span class="file">PostViewModel.kt</span> <span class="tag-new">CREATE</span> — a ViewModel that holds api + dao</h3>
+  <p>Create a new file in the same folder <span class="file">java/com/example/miniblog/</span>.</p>
+  <pre><code>package com.example.miniblog
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
+class PostViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val dao = AppDatabase.getInstance(application).postDao()
+    private val api = RetrofitClient.api
+
+    /** The UI observes this. Single source of truth = Room. */
+    val posts: LiveData&lt;List&lt;Post&gt;&gt; = dao.getAllPosts()
+
+    /** Fetch from the network, then save into Room. The LiveData above updates by itself. */
+    fun refresh() {
+        viewModelScope.launch {
+            try {
+                val fetched = api.getPosts()
+                dao.insertPosts(fetched)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+}</code></pre>
+  <div class="why"><b>This is the "no Repository" anti-pattern:</b> the ViewModel must know <i>both</i> how to call the network <i>and</i>
+  how to store to the DB, and it needs <code class="i">Application</code> (via <code class="i">AndroidViewModel</code>) to open Room. Step 2 cleans this up.</div>
+
+  <h3 id="s1-main"><span class="file">MainActivity.kt</span> <span class="tag-edit">EDIT</span> — wire it up</h3>
+  <pre><code>package com.example.miniblog
+
+import android.os.Bundle
+import android.widget.Button
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+
+class MainActivity : AppCompatActivity() {
+
+    private val viewModel: PostViewModel by viewModels()
+    private val adapter = PostAdapter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val recyclerView = findViewById&lt;RecyclerView&gt;(R.id.postsRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+
+        // Observe Room (through the ViewModel): when the posts table changes -&gt; redraw the list.
+        viewModel.posts.observe(this) { posts -&gt;
+            adapter.updatePosts(posts)
+        }
+
+        // Tap Refresh -&gt; ViewModel fetches from network -&gt; saves to Room -&gt; LiveData updates the UI.
+        findViewById&lt;Button&gt;(R.id.refreshButton).setOnClickListener {
+            viewModel.refresh()
+        }
+    }
+}</code></pre>
+  <div class="why"><b>Why <code class="i">by viewModels()</code> works here:</b> <code class="i">PostViewModel</code> is an
+  <code class="i">AndroidViewModel</code>, so the default factory supplies the <code class="i">Application</code> automatically.</div>
+
+  <div class="ok"><b>✔ Verify Step 1:</b> Run the app on an emulator (API ≥ 24) → tap <b>Refresh</b> → the list of posts (title + body)
+  appears. Close and reopen the app: the data is still there (it was saved to Room).</div>
+
+  <ul class="chk">
+    <li><label><input type="checkbox" data-key="s1-api"> Edited <b>ApiService.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s1-retrofit"> Edited <b>RetrofitClient.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s1-adapter"> Edited <b>PostAdapter.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s1-vm"> Created <b>PostViewModel.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s1-main"> Wired <b>MainActivity.kt</b> and ran it successfully</label></li>
+  </ul>
+</section>
+
+<!-- ===================== STEP 2 ===================== -->
+<section id="step2">
+  <a class="toplink" href="#intro">↑ top</a>
+  <h2 class="step"><span class="badge">Step 2</span> Extract the Repository <span class="branch">→ 02-repository</span></h2>
+  <p>Goal: move the data logic into a <b>Repository</b> class so the ViewModel slims down to just coordinating.</p>
+
+  <h3><span class="file">PostRepository.kt</span> <span class="tag-new">CREATE</span></h3>
+  <pre><code>package com.example.miniblog
+
+import androidx.lifecycle.LiveData
+
+class PostRepository(
+    private val api: ApiService,
+    private val dao: PostDao
+) {
+    /** Single source of truth = Room. */
+    val posts: LiveData&lt;List&lt;Post&gt;&gt; = dao.getAllPosts()
+
+    /** Fetch from the network, save into Room. */
+    suspend fun refresh() {
+        val fetched = api.getPosts()
+        dao.insertPosts(fetched)
+    }
+}</code></pre>
+  <div class="why"><b>Why:</b> the Repository now <i>owns</i> the two data sources (network + DB) and exposes a clean API
+  (<code class="i">posts</code> + <code class="i">refresh()</code>). The rest of the app no longer needs to know where data comes from.</div>
+
+  <h3><span class="file">PostViewModel.kt</span> <span class="tag-edit">EDIT</span> — becomes a plain <code class="i">ViewModel</code></h3>
+  <pre><code>package com.example.miniblog
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
+class PostViewModel(private val repository: PostRepository) : ViewModel() {
+
+    val posts: LiveData&lt;List&lt;Post&gt;&gt; = repository.posts
+
+    fun refresh() {
+        viewModelScope.launch {
+            try {
+                repository.refresh()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+}</code></pre>
+  <div class="why"><b>Compared to Step 1:</b> the ViewModel no longer touches api/dao — it just delegates to the repository. But because it
+  takes a <code class="i">PostRepository</code> in its constructor, the default <code class="i">by viewModels()</code> can no longer build it → see MainActivity.</div>
+
+  <h3><span class="file">MainActivity.kt</span> <span class="tag-edit">EDIT</span> — temporary inline factory</h3>
+  <pre><code>package com.example.miniblog
+
+import android.os.Bundle
+import android.widget.Button
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+
+class MainActivity : AppCompatActivity() {
+
+    // We extracted a Repository, but the slim ViewModel needs it in its constructor. There is no
+    // factory yet, so for now we build it BY HAND with an inline factory — a bit clunky; Step 3
+    // will clean it up.
+    private val viewModel: PostViewModel by viewModels {
+        val dao = AppDatabase.getInstance(applicationContext).postDao()
+        val repository = PostRepository(RetrofitClient.api, dao)
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T =
+                PostViewModel(repository) as T
+        }
+    }
+
+    private val adapter = PostAdapter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val recyclerView = findViewById&lt;RecyclerView&gt;(R.id.postsRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+
+        viewModel.posts.observe(this) { posts -&gt;
+            adapter.updatePosts(posts)
+        }
+
+        findViewById&lt;Button&gt;(R.id.refreshButton).setOnClickListener {
+            viewModel.refresh()
+        }
+    }
+}</code></pre>
+  <div class="warn"><b>Deliberate pain point:</b> the ViewModel construction code "leaks" into the Activity. This is exactly the problem Step 3 (Factory + Application) solves.</div>
+  <div class="ok"><b>✔ Verify Step 2:</b> the app runs exactly like Step 1 (this is a refactor, behaviour is unchanged).</div>
+
+  <ul class="chk">
+    <li><label><input type="checkbox" data-key="s2-repo"> Created <b>PostRepository.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s2-vm"> Changed <b>PostViewModel</b> to a plain ViewModel</label></li>
+    <li><label><input type="checkbox" data-key="s2-main"> Edited <b>MainActivity</b> and ran it</label></li>
+  </ul>
+</section>
+
+<!-- ===================== STEP 3 ===================== -->
+<section id="step3">
+  <a class="toplink" href="#intro">↑ top</a>
+  <h2 class="step"><span class="badge">Step 3</span> Factory + Application (manual DI) <span class="branch">→ 03-factory-di</span></h2>
+  <p>Goal: gather construction into <b>one place</b> (the Application) and use a reusable <b>ViewModelFactory</b>. No Hilt.</p>
+
+  <h3><span class="file">MiniBlogApplication.kt</span> <span class="tag-new">CREATE</span></h3>
+  <pre><code>package com.example.miniblog
+
+import android.app.Application
+
+class MiniBlogApplication : Application() {
+
+    val database by lazy { AppDatabase.getInstance(this) }
+
+    val repository by lazy { PostRepository(RetrofitClient.api, database.postDao()) }
+}</code></pre>
+  <div class="why"><b>Why:</b> the Application is the "composition root" — the single place that builds the database + repository and shares them
+  app-wide. <code class="i">by lazy</code> = create on first use, then reuse.</div>
+
+  <h3><span class="file">PostViewModelFactory.kt</span> <span class="tag-new">CREATE</span></h3>
+  <pre><code>package com.example.miniblog
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+
+class PostViewModelFactory(
+    private val repository: PostRepository
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T =
+        PostViewModel(repository) as T
+}</code></pre>
+
+  <h3><span class="file">AndroidManifest.xml</span> <span class="tag-edit">EDIT</span> — register the Application</h3>
+  <p>Add the <code class="i">android:name</code> attribute to the <code class="i">&lt;application&gt;</code> tag:</p>
+  <pre><code>&lt;application
+    android:name=".MiniBlogApplication"
+    android:allowBackup="true"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.MiniBlog"&gt;</code></pre>
+
+  <h3><span class="file">MainActivity.kt</span> <span class="tag-edit">EDIT</span> — simplify</h3>
+  <p>Remove the inline factory; replace the ViewModel declaration with:</p>
+  <pre><code>private val viewModel: PostViewModel by viewModels {
+    PostViewModelFactory((application as MiniBlogApplication).repository)
+}</code></pre>
+  <p class="small">Also <b>delete</b> the two now-unused imports: <code class="i">androidx.lifecycle.ViewModel</code> and
+  <code class="i">androidx.lifecycle.ViewModelProvider</code>. The <code class="i">onCreate</code> body stays the same as Step 2.</p>
+  <div class="why"><b>Why:</b> building the repository now lives in the Application, and building the ViewModel lives in the Factory. The Activity
+  just asks for a ViewModel built from the shared repository — clean and reusable. This is <b>manual dependency injection</b>.</div>
+  <div class="ok"><b>✔ Verify Step 3:</b> the app still runs the same; MainActivity is noticeably shorter.</div>
+
+  <ul class="chk">
+    <li><label><input type="checkbox" data-key="s3-app"> Created <b>MiniBlogApplication.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s3-factory"> Created <b>PostViewModelFactory.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s3-manifest"> Added <b>android:name</b> to the Manifest</label></li>
+    <li><label><input type="checkbox" data-key="s3-main"> Slimmed <b>MainActivity</b> and ran it</label></li>
+  </ul>
+</section>
+
+<!-- ===================== STEP 4 ===================== -->
+<section id="step4">
+  <a class="toplink" href="#intro">↑ top</a>
+  <h2 class="step"><span class="badge">Step 4</span> Interface + Fake + Test <span class="branch">→ 04-testable</span></h2>
+  <p>Goal: make the Repository an <b>interface</b> so it can be swapped for a fake in tests — letting us unit-test the ViewModel without an emulator, network, or Room.</p>
+
+  <h3><span class="file">PostRepository.kt</span> <span class="tag-edit">EDIT</span> — make it an interface</h3>
+  <pre><code>package com.example.miniblog
+
+import androidx.lifecycle.LiveData
+
+interface PostRepository {
+    val posts: LiveData&lt;List&lt;Post&gt;&gt;
+    suspend fun refresh()
+}</code></pre>
+
+  <h3><span class="file">DefaultPostRepository.kt</span> <span class="tag-new">CREATE</span> — the real implementation</h3>
+  <pre><code>package com.example.miniblog
+
+import androidx.lifecycle.LiveData
+
+class DefaultPostRepository(
+    private val api: ApiService,
+    private val dao: PostDao
+) : PostRepository {
+
+    override val posts: LiveData&lt;List&lt;Post&gt;&gt; = dao.getAllPosts()
+
+    override suspend fun refresh() {
+        val fetched = api.getPosts()
+        dao.insertPosts(fetched)
+    }
+}</code></pre>
+
+  <h3><span class="file">MiniBlogApplication.kt</span> <span class="tag-edit">EDIT</span> — build the Default impl</h3>
+  <p>Change the <code class="i">repository</code> declaration to build <code class="i">DefaultPostRepository</code> but typed as the interface:</p>
+  <pre><code>val repository: PostRepository by lazy {
+    DefaultPostRepository(RetrofitClient.api, database.postDao())
+}</code></pre>
+
+  <h3><span class="file">gradle/libs.versions.toml</span> <span class="tag-edit">EDIT</span> — add test libraries</h3>
+  <p>Add to the <code class="i">[versions]</code> section:</p>
+  <pre><code>junit = "4.13.2"
+archCoreTesting = "2.2.0"</code></pre>
+  <p>Add to the <code class="i">[libraries]</code> section:</p>
+  <pre><code>junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }</code></pre>
+
+  <h3><span class="file">app/build.gradle.kts</span> <span class="tag-edit">EDIT</span> — declare the test dependencies</h3>
+  <p>Add inside the <code class="i">dependencies { ... }</code> block:</p>
+  <pre><code>testImplementation(libs.junit)
+testImplementation(libs.androidx.arch.core.testing)</code></pre>
+
+  <h3><span class="file">src/test/java/com/example/miniblog/FakePostRepository.kt</span> <span class="tag-new">CREATE</span></h3>
+  <p class="small">Note: this file lives in the <b>test</b> folder (<code class="i">src/test/java/...</code>), not <code class="i">src/main</code>.</p>
+  <pre><code>package com.example.miniblog
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+
+class FakePostRepository : PostRepository {
+
+    val postsData = MutableLiveData&lt;List&lt;Post&gt;&gt;()
+    var refreshCalled = false
+
+    override val posts: LiveData&lt;List&lt;Post&gt;&gt; get() = postsData
+
+    override suspend fun refresh() {
+        refreshCalled = true
+    }
+}</code></pre>
+
+  <h3><span class="file">src/test/java/com/example/miniblog/PostViewModelTest.kt</span> <span class="tag-new">CREATE</span></h3>
+  <pre><code>package com.example.miniblog
+
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+
+class PostViewModelTest {
+
+    // Lets LiveData run synchronously on the test thread (instead of Android's main thread).
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    @Test
+    fun viewModel_exposesPostsFromRepository() {
+        val fake = FakePostRepository()
+        val viewModel = PostViewModel(fake)
+
+        viewModel.posts.observeForever { }
+        val sample = listOf(
+            Post(id = 1, userId = 1, title = "Hello", body = "World")
+        )
+        fake.postsData.value = sample
+
+        assertEquals(sample, viewModel.posts.value)
+    }
+}</code></pre>
+  <div class="why"><b>Why it's testable now:</b> because <code class="i">PostViewModel</code> depends on the <b>interface</b> <code class="i">PostRepository</code>,
+  we can hand it a <code class="i">FakePostRepository</code> (no network, no DB) and assert that the ViewModel exposes the repository's LiveData.</div>
+  <div class="ok"><b>✔ Verify Step 4:</b> run <code class="i">./gradlew testDebugUnitTest</code> (or click ▶ next to the test in Android Studio) → <b>1 test passes</b>.</div>
+
+  <ul class="chk">
+    <li><label><input type="checkbox" data-key="s4-interface"> <b>PostRepository</b> is now an interface</label></li>
+    <li><label><input type="checkbox" data-key="s4-default"> Created <b>DefaultPostRepository.kt</b></label></li>
+    <li><label><input type="checkbox" data-key="s4-app"> Edited <b>MiniBlogApplication</b></label></li>
+    <li><label><input type="checkbox" data-key="s4-deps"> Added the test dependencies (toml + build.gradle.kts)</label></li>
+    <li><label><input type="checkbox" data-key="s4-fake"> Created <b>FakePostRepository.kt</b> (src/test)</label></li>
+    <li><label><input type="checkbox" data-key="s4-test"> Created <b>PostViewModelTest.kt</b> and the test passes</label></li>
+  </ul>
+</section>
+
+<!-- ===================== VERIFY & TROUBLESHOOTING ===================== -->
+<section id="verify">
+  <a class="toplink" href="#intro">↑ top</a>
+  <h2 class="step">Verify &amp; troubleshooting</h2>
+  <ul>
+    <li><b>The app shows no data on launch:</b> that's by design — Room is empty at first. Tap <b>Refresh</b> to load.</li>
+    <li><b>Network won't load:</b> make sure the emulator has Internet; the <code class="i">INTERNET</code> permission is already in the Manifest.</li>
+    <li><b>Gradle sync error about "kotlin.sourceSets":</b> the project already sets <code class="i">android.disallowKotlinSourceSets=false</code>
+        in <span class="file">gradle.properties</span> so KSP 2.2.10 works with AGP 9's built-in Kotlin. <b>Do not remove that flag.</b></li>
+    <li><b><code class="i">notifyDataSetChanged()</code> warning:</b> just a lint warning (DiffUtil is a later optimization) — it does not break the build.</li>
+    <li><b>Test can't find <code class="i">InstantTaskExecutorRule</code>:</b> you haven't added <code class="i">androidx.arch.core:core-testing</code> in Step 4 — sync Gradle again.</li>
+  </ul>
+  <hr>
+  <p class="small">Check the answer at any time: <code class="i">git checkout 01-no-repository</code> (…02-repository, 03-factory-di, 04-testable),
+  or view a single lesson: <code class="i">git diff 03-factory-di..04-testable</code>.</p>
+</section>
+
+</main>
+</div>
+
+<script>
+  // Copy button on every code block.
+  document.querySelectorAll('pre').forEach(function(pre){
+    var code = pre.querySelector('code');
+    if(!code) return;
+    var btn = document.createElement('button');
+    btn.className = 'copy';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', function(){
+      navigator.clipboard.writeText(code.textContent).then(function(){
+        btn.textContent = 'Copied ✓';
+        setTimeout(function(){ btn.textContent = 'Copy'; }, 1200);
+      });
+    });
+    pre.appendChild(btn);
+  });
+
+  // Checklist progress saved to localStorage.
+  document.querySelectorAll('input[type=checkbox][data-key]').forEach(function(cb){
+    var key = 'miniblog-en-' + cb.dataset.key;
+    if(localStorage.getItem(key) === '1') cb.checked = true;
+    cb.addEventListener('change', function(){
+      localStorage.setItem(key, cb.checked ? '1' : '0');
+    });
+  });
+</script>
+</body>
+</html>

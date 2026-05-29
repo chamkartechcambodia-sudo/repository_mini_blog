@@ -1,0 +1,13 @@
+# Normalize line endings so diffs stay clean across macOS/Linux/Windows.
+* text=auto eol=lf
+
+# Windows batch scripts must keep CRLF.
+*.bat text eol=crlf
+
+# The POSIX Gradle wrapper script must keep LF.
+gradlew text eol=lf
+
+# Binary files — never apply line-ending/text normalization.
+*.jar binary
+*.png binary
+*.webp binary
