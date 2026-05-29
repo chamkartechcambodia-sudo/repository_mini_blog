@@ -1,37 +1,29 @@
 package com.example.miniblog
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 /**
- * Step 1 — NO repository yet.
+ * Step 2 — a SLIM ViewModel.
  *
- * This ViewModel talks DIRECTLY to BOTH data sources: the network [ApiService] AND the Room
- * [PostDao]. Notice how much it has to know — how to fetch, how to store, and where the
- * database comes from. Mixing those responsibilities into the ViewModel is exactly the
- * problem the Repository pattern will fix in the next step.
+ * It holds a [PostRepository] and simply delegates: expose the repository's data, and ask it
+ * to refresh. Compare with step 1's fat AndroidViewModel that juggled the api and dao itself.
  *
- * It extends AndroidViewModel only to get the Application context needed to open Room.
+ * Because it now takes a PostRepository in its constructor, the default `by viewModels()`
+ * factory can no longer build it. For now MainActivity wires it by hand with an inline
+ * factory — step 3 replaces that with a proper ViewModelFactory.
  */
-class PostViewModel(application: Application) : AndroidViewModel(application) {
+class PostViewModel(private val repository: PostRepository) : ViewModel() {
 
-    private val dao = AppDatabase.getInstance(application).postDao()
-    private val api = RetrofitClient.api
+    val posts: LiveData<List<Post>> = repository.posts
 
-    /** The UI observes this. Single source of truth = Room. */
-    val posts: LiveData<List<Post>> = dao.getAllPosts()
-
-    /** Fetch from the network, then save into Room. The LiveData above then updates by itself. */
     fun refresh() {
         viewModelScope.launch {
             try {
-                val fetched = api.getPosts()
-                dao.insertPosts(fetched)
+                repository.refresh()
             } catch (e: Exception) {
-                // Minimal handling for the lesson; a real app would surface this to the user.
                 e.printStackTrace()
             }
         }
