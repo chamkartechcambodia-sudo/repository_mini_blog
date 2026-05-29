@@ -1,20 +1,14 @@
 package com.example.miniblog
 
+import retrofit2.http.GET
+
 /**
  * Retrofit endpoints for the blog API.
  *
- * TODO (Step 1 — branch 01-no-repository): declare the GET endpoint, e.g.
- *
- *     import retrofit2.http.GET
- *
- *     interface ApiService {
- *         @GET("posts")
- *         suspend fun getPosts(): List<Post>
- *     }
- *
- * Left empty on purpose in the starter so the project compiles while the networking
- * layer is still a "fill this in next" exercise.
+ * `suspend` lets us call this from a coroutine (in the ViewModel) without blocking the UI.
  */
 interface ApiService {
-    // TODO (Step 1): @GET("posts") suspend fun getPosts(): List<Post>
+
+    @GET("posts")
+    suspend fun getPosts(): List<Post>
 }
